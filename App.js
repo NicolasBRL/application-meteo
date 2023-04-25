@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import {
   Button,
+  Image,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -26,20 +27,12 @@ export default function App() {
           `https://api.openweathermap.org/data/2.5/weather?q=${text}&lang=fr&units=metric&appid=${API_KEY}`
         )
         .then((res) => {
-          console.log(res.status)
+          console.log(new Date((res.data.dt * 1000)).toLocaleTimeString('fr-FR'), res.data)
           if (res.status === 200) setDataMeteo(res.data);
           if (res.status === 404) setDataMeteo(false);
         })
         .catch((err) => setDataMeteo(false));
     }
-  };
-
-  const getDataMeteo = async () => {
-    await axios
-      .get(
-        `https://api.openweathermap.org/data/2.5/weather?q=Nantes&lang=fr&units=metric&appid=${API_KEY}`
-      )
-      .then((res) => {});
   };
 
   const getPosition = async () => {
@@ -55,16 +48,12 @@ export default function App() {
           `https://api.openweathermap.org/data/2.5/weather?lat=${location.coords.latitude}&lon=${location.coords.longitude}&lang=fr&units=metric&appid=${API_KEY}`
         )
         .then((res) => {
-          console.log(res.data)
+          console.log(new Date((res.data.dt * 1000) + res.data.timezone).toLocaleTimeString('fr-FR'), res.data.dt)
           if (res.status === 200) setDataMeteo(res.data);
           if (res.status === 404) setDataMeteo(false);
         })
         .catch((err) => setDataMeteo(false));
   }
-
-  useEffect(() => {
-    getDataMeteo();
-  }, []);
 
   return (
     <View>
@@ -86,9 +75,14 @@ export default function App() {
       {dataMeteo && (
         <SafeAreaView style={styles.meteoDataContainer}>
           {dataMeteo.name && <Text style={{fontSize: 18, fontWeight: 700}}>{dataMeteo.name}</Text>}
+          <Image 
+            source={{uri: `http://openweathermap.org/img/wn/${dataMeteo.weather[0].icon}@2x.png`}}
+            style={{width: 100, height: 100}}
+          />
           <Text>{dataMeteo.main.temp}°</Text>
           <Text>Température min: {dataMeteo.main.temp_min}°</Text>
           <Text>Température max: {dataMeteo.main.temp_max}°</Text>
+          <Text>{new Date((dataMeteo.dt + dataMeteo.timezone) * 1000).toLocaleTimeString('fr-FR', {timeZone: "UTC"})}</Text>
         </SafeAreaView>
       )}
     </View>
